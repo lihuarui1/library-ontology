@@ -1,0 +1,264 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://www.example.org/library#"
+     xml:base="http://www.example.org/library"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+
+    <owl:Ontology rdf:about="http://www.example.org/library">
+        <rdfs:label xml:lang="zh">图书馆借阅领域本体</rdfs:label>
+        <rdfs:comment xml:lang="zh">课程作业示例：文献-读者-借阅领域本体，支持 HermiT 子类推理与等价类推理</rdfs:comment>
+    </owl:Ontology>
+
+    <!-- ============================================================= -->
+    <!-- 类定义                                                          -->
+    <!-- ============================================================= -->
+
+    <owl:Class rdf:about="http://www.example.org/library#Resource">
+        <rdfs:label xml:lang="zh">文献资源</rdfs:label>
+        <rdfs:comment xml:lang="zh">图书馆可借阅资源的抽象父类</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.example.org/library#Book">
+        <rdfs:label xml:lang="zh">图书</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://www.example.org/library#Resource"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.example.org/library#Journal">
+        <rdfs:label xml:lang="zh">期刊</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://www.example.org/library#Resource"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.example.org/library#Thesis">
+        <rdfs:label xml:lang="zh">学位论文</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://www.example.org/library#Resource"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.example.org/library#Reader">
+        <rdfs:label xml:lang="zh">读者</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.example.org/library#Student">
+        <rdfs:label xml:lang="zh">学生</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://www.example.org/library#Reader"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.example.org/library#Teacher">
+        <rdfs:label xml:lang="zh">教师</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://www.example.org/library#Reader"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.example.org/library#Author">
+        <rdfs:label xml:lang="zh">作者</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.example.org/library#Publisher">
+        <rdfs:label xml:lang="zh">出版社</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.example.org/library#Category">
+        <rdfs:label xml:lang="zh">分类</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://www.example.org/library#BorrowRecord">
+        <rdfs:label xml:lang="zh">借阅记录</rdfs:label>
+    </owl:Class>
+
+    <!-- 等价类：逾期读者 = 读者 且 存在一条 overdue=true 的借阅记录 -->
+    <owl:Class rdf:about="http://www.example.org/library#OverdueReader">
+        <rdfs:label xml:lang="zh">逾期读者</rdfs:label>
+        <rdfs:comment xml:lang="zh">由推理机自动推断：有逾期记录的读者</rdfs:comment>
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.example.org/library#Reader"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="http://www.example.org/library#hasRecord"/>
+                        <owl:someValuesFrom>
+                            <owl:Class>
+                                <owl:intersectionOf rdf:parseType="Collection">
+                                    <rdf:Description rdf:resource="http://www.example.org/library#BorrowRecord"/>
+                                    <owl:Restriction>
+                                        <owl:onProperty rdf:resource="http://www.example.org/library#overdue"/>
+                                        <owl:hasValue rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</owl:hasValue>
+                                    </owl:Restriction>
+                                </owl:intersectionOf>
+                            </owl:Class>
+                        </owl:someValuesFrom>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- ============================================================= -->
+    <!-- 对象属性                                                        -->
+    <!-- ============================================================= -->
+
+    <owl:ObjectProperty rdf:about="http://www.example.org/library#writtenBy">
+        <rdfs:label xml:lang="zh">撰写</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Resource"/>
+        <rdfs:range rdf:resource="http://www.example.org/library#Author"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://www.example.org/library#publishedBy">
+        <rdfs:label xml:lang="zh">出版</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Resource"/>
+        <rdfs:range rdf:resource="http://www.example.org/library#Publisher"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://www.example.org/library#belongsTo">
+        <rdfs:label xml:lang="zh">属于分类</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Resource"/>
+        <rdfs:range rdf:resource="http://www.example.org/library#Category"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://www.example.org/library#hasRecord">
+        <rdfs:label xml:lang="zh">拥有借阅记录</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Reader"/>
+        <rdfs:range rdf:resource="http://www.example.org/library#BorrowRecord"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://www.example.org/library#recordFor">
+        <rdfs:label xml:lang="zh">记录对应文献</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#BorrowRecord"/>
+        <rdfs:range rdf:resource="http://www.example.org/library#Resource"/>
+    </owl:ObjectProperty>
+
+    <!-- ============================================================= -->
+    <!-- 数据属性                                                        -->
+    <!-- ============================================================= -->
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#title">
+        <rdfs:label xml:lang="zh">题名</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Resource"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#isbn">
+        <rdfs:label xml:lang="zh">ISBN</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Resource"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#year">
+        <rdfs:label xml:lang="zh">出版年份</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Resource"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#callno">
+        <rdfs:label xml:lang="zh">索书号</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Resource"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#name">
+        <rdfs:label xml:lang="zh">姓名/名称</rdfs:label>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#cardno">
+        <rdfs:label xml:lang="zh">读者证号</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Reader"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#dept">
+        <rdfs:label xml:lang="zh">院系</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Reader"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#borrowDate">
+        <rdfs:label xml:lang="zh">借出日期</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#BorrowRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#dueDate">
+        <rdfs:label xml:lang="zh">应还日期</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#BorrowRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#returnDate">
+        <rdfs:label xml:lang="zh">归还日期</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#BorrowRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#overdue">
+        <rdfs:label xml:lang="zh">是否逾期</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#BorrowRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#categoryName">
+        <rdfs:label xml:lang="zh">分类名称</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Category"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#categoryCode">
+        <rdfs:label xml:lang="zh">分类号</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Category"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://www.example.org/library#city">
+        <rdfs:label xml:lang="zh">所在城市</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.example.org/library#Publisher"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <!-- ============================================================= -->
+    <!-- 实例（Individuals）—— 用于推理演示                             -->
+    <!-- ============================================================= -->
+
+    <owl:NamedIndividual rdf:about="http://www.example.org/library#R001_三体">
+        <rdf:type rdf:resource="http://www.example.org/library#Book"/>
+        <title>三体</title>
+        <isbn>9787536692930</isbn>
+        <year rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2006</year>
+        <callno>TP391/001</callno>
+        <writtenBy rdf:resource="http://www.example.org/library#A001_刘慈欣"/>
+        <publishedBy rdf:resource="http://www.example.org/library#P001_重庆出版社"/>
+        <belongsTo rdf:resource="http://www.example.org/library#C002_文学"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="http://www.example.org/library#A001_刘慈欣">
+        <rdf:type rdf:resource="http://www.example.org/library#Author"/>
+        <name>刘慈欣</name>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="http://www.example.org/library#P001_重庆出版社">
+        <rdf:type rdf:resource="http://www.example.org/library#Publisher"/>
+        <name>重庆出版社</name>
+        <city>重庆</city>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="http://www.example.org/library#C002_文学">
+        <rdf:type rdf:resource="http://www.example.org/library#Category"/>
+        <categoryName>文学</categoryName>
+        <categoryCode>I</categoryCode>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="http://www.example.org/library#U001_张三">
+        <rdf:type rdf:resource="http://www.example.org/library#Student"/>
+        <name>张三</name>
+        <cardno>S20210001</cardno>
+        <dept>计算机学院</dept>
+        <hasRecord rdf:resource="http://www.example.org/library#D002_借阅记录"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="http://www.example.org/library#D002_借阅记录">
+        <rdf:type rdf:resource="http://www.example.org/library#BorrowRecord"/>
+        <borrowDate>2026-09-20</borrowDate>
+        <dueDate>2026-10-04</dueDate>
+        <overdue rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</overdue>
+        <recordFor rdf:resource="http://www.example.org/library#R001_三体"/>
+    </owl:NamedIndividual>
+
+</rdf:RDF>
